@@ -15,7 +15,7 @@ CREATE TABLE productos (
 	-- 9999.99 NUMERIC(6,2) TOTAL 6 NUMEROS DECIMALES 2
 	-- CHECK comprobacion
 	producto_precio	NUMERIC(6,2) CHECK(producto_precio > 0),
-	producto_stock SMALLINT CHECK(producto_precio >= 0) DEFAULT 0,
+	producto_stock SMALLINT CHECK(producto_stock >= 0) DEFAULT 0,
 	producto_tipo VARCHAR(80)
 );
 
