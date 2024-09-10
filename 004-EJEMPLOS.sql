@@ -19,16 +19,16 @@ CREATE TABLE personas (
 	id_persona INT NOT NULL,
     -- Tipo de dato string(texto) con un máximo de 30 caracteres con tamaño variable
 	nombre VARCHAR(30),
-	aprellido VARCHAR(40)
+	apellido VARCHAR(40)
 );
 
 -- Añadir datos a la tabla personas
 INSERT INTO personas VALUES ('1', 'Jose', 'Pons');
 INSERT INTO personas VALUES (2, 'Jose', 'Pons');
-INSERT INTO personas (id_persona, nombre, aprellido) VALUES (3, 'Jose', 'Pons');
+INSERT INTO personas (id_persona, nombre, apellido) VALUES (3, 'Jose', 'Pons');
 INSERT INTO personas (id_persona, nombre) VALUES ('4', 'Jose', 'Pons');
 INSERT INTO personas (id_persona, nombre) VALUES (5, 'Jose');
-INSERT INTO personas (id_persona, aprellido) VALUES (6, 'Milan');
+INSERT INTO personas (id_persona, apellido) VALUES (6, 'Milan');
 
 -- Consultar los datos
 SELECT * FROM personas;
@@ -38,12 +38,12 @@ LIMIT 3;
 
 -- Actualizar un dato
 -- En este caso de personas actualizamos el apellido de todos los de la tabla
-UPDATE personas SET aprellido = 'Pons';
+UPDATE personas SET apellido = 'Pons';
 
 -- De persona actualiza
 UPDATE personas
--- El aprellido
-SET aprellido = 'Mila'
+-- El apellido
+SET apellido = 'Mila'
 -- Donde id_persona sea 1
 WHERE id_persona = '1';
 
@@ -54,7 +54,7 @@ WHERE nombre IS NULL;
 UPDATE personas
 SET 
     nombre = 'Sam',
-    aprellido = 'Funi'
+    apellido = 'Funi'
 WHERE id_persona = '1';
 
 -- Borrar tabla personas
@@ -168,3 +168,122 @@ DROP TABLE personas;
 -- documento XML; -- Datos en formato XML
 
 -- Todos los tipos en https://www.postgresql.org/docs/16/datatype.html
+
+
+
+-- Renombrar nombre de una columna de una tabla
+ALTER TABLE nombre_tabla RENAME COLUMN nombre_columna_actual TO nuevo_nombre_columna;
+
+-- Traerse todas las columnas de una tabla
+SELECT * FROM personas;
+
+-- Selecionar nombre, apellido en una sola columna AS renombra la columna para que no tenga un nombre por defecto DESDE personas
+SELECT (nombre, apellido) AS "Nombre Completo" FROM personas;
+
+-- SELECIONAR nombre, apellido en dos columnas separadas DESDE la tabla personas
+SELECT nombre, apellido FROM personas;
+
+-- SELECIONAR de la columna nombre
+SELECT nombre
+-- DESDE la tabla personas
+FROM personas
+-- DONDE la id_persona sea igual a 3
+WHERE id_persona = '3';
+
+SELECT *
+FROM personas
+-- != no sea igual
+WHERE nombre != 'Jose';
+
+SELECT *
+FROM personas
+-- id_persona mayor que 2
+WHERE id_persona > '2';
+
+-- = , != , > , < , >= , <=
+
+SELECT *
+FROM personas
+-- Se debe cumplir la primera condición Y la segunda
+WHERE id_persona > '2' AND nombre = 'Sergi';
+
+-- ELIMINAR DESDE la tabla personas
+DELETE FROM personas
+-- DONDE nombre sea Jose
+WHERE nombre = 'Jose';
+
+
+-- COMENTARIO
+
+/* 
+    COMENTARIO
+    COMENTARIO
+    COMENTARIO
+    COMENTARIO
+    COMENTARIO 
+*/
+
+-- ALTERA la TABLA personas
+ALTER TABLE personas
+-- AÑADIENDO una COLUMNA test con el tipo VARCHAR(20)
+ADD COLUMN test VARCHAR(20);
+
+ALTER TABLE personas
+-- RENOMBRAR COLUMNA test(nombre actual) A test2
+RENAME COLUMN test TO test2;
+
+ALTER TABLE personas
+-- ELIMINAR COLUMNA con el nombre
+DROP COLUMN test2;
+
+-- ACTUALIZAR tabla persona COLOCAR en la columna test el campo JS
+UPDATE personas SET test = 'JS';
+
+-- Ahora podemos hacer que la columna test no tenga valores nulos
+ALTER TABLE personas
+-- ALTERAR COLUMNA test PONER que NO pueda tener valores NULOS
+ALTER COLUMN test SET NOT NULL;
+
+ALTER TABLE personas
+-- QUITAR el NOT NULL
+ALTER COLUMN test DROP NOT NULL;
+
+ALTER TABLE personas
+-- cambiar tipo de DATO de la columna test
+ALTER COLUMN test TYPE VARCHAR(50); -- CUIDADO!!! CON LO QUE QUIERAS CONVERTIR O CAMBIAR
+
+/* 
+CREATE TABLE personas (
+    id_persona SERIAL PRIMARY KEY,-- ID INCREMENTAL + PRIMARY KEY
+); 
+*/
+
+ALTER TABLE personas
+--AÑADIR CLAVE PRIMARIA a id_persona
+ADD PRIMARY KEY (id_persona);
+
+-- PRIMARY KEY llave unica que no puede ser nula
+
+CREATE TABLE test (
+	-- id SERIAL PRIMARY KEY NOT NULL, -- NOT NULL no aria falta ponerlo en PRIMARY KEY porque lo hace por defecto 
+	-- SERIAL 1, 2, 3, 4
+    id SERIAL PRIMARY KEY,
+	nombre VARCHAR(20),
+	telefono VARCHAR(10)	
+);
+
+-- SMALLSERIAL
+-- Tipo de Datos: SMALLINT.
+-- Rango: De -32,768 a 32,767.
+
+-- SERIAL
+-- Tipo de Datos: INTEGER.
+-- Rango: De -2,147,483,648 a 2,147,483,647
+
+-- BIGSERIAL
+-- Tipo de Datos: BIGINT.
+-- Rango: De -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807.
+
+SELECT * FROM test;
+
+INSERT INTO test (nombre, telefono) VALUES ('Sam','666666666');
