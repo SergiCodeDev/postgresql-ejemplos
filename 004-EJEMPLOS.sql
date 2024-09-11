@@ -287,3 +287,121 @@ CREATE TABLE test (
 SELECT * FROM test;
 
 INSERT INTO test (nombre, telefono) VALUES ('Sam','666666666');
+
+-- ELIMINA todos los datos de test
+DELETE FROM test; -- Elimina fila por fila registrando cada operación y activando triggers
+
+-- ELIMINA la TABLA test por completo
+DROP TABLE test;
+
+-- Elimina todos los datos rápidamente sin registrar cada eliminación ni activar triggers
+TRUNCATE TABLE test; -- En MySQL seria como TRUNCATE TABLE test RESTART IDENTITY;
+
+-- Elimina los registros y reinicia los contadores de las columnas con auto-incremento
+TRUNCATE TABLE test RESTART IDENTITY;
+
+CREATE TABLE test (
+	id SERIAL PRIMARY KEY,
+	nombre VARCHAR(20) NOT NULL,
+    -- DEFAULT = VALOR POR DEFECTO es 'Desconocido'
+	telefono VARCHAR(20) DEFAULT 'Desconocido'
+);
+
+-- SELECIONAR nombre, salario, nueva columna solo para optener los datos (no se crea la columna en la base de datos) 
+-- (salario + 500) RENOMBRAR A bono DESDE empleados
+SELECT nombre, salario, (salario + 500) AS bono FROM empleado
+
+-- ACTUALIZAR empleados
+UPDATE empleados
+-- CAMBIAR slario a salario + 500
+SET slario = salario + 500
+-- DONDE nombre sea igual a Sam
+WHERE nombre = 'Sam';
+
+-- SELECIONAR *(TODOS) DESDE personas ORDENAR POR nombre 
+SELECT * FROM personas ORDER BY nombre;
+
+-- ASC = ASCENDENTE, que ya era la manera predeterminada y no haria falta ponerlo
+SELECT * FROM personas ORDER BY nombre ASC;
+
+-- DESC odenar por nombre DESCENDENTE
+SELECT * FROM personas ORDER BY nombre DESC;
+
+-- SELECIONAR TODOS DESDE personas ORDENAR POR la segunda columna que tenga la tabla en este caso seria nombre
+SELECT * FROM personas ORDER BY 2;
+
+-- ORDENAR por nombre ASCENDENTE y después por id_persona DESCENDENTE
+-- ORDER BY nombre ASC: Ordena los resultados primero por el campo nombre en orden ascendente (de la A a la Z).
+-- id_persona DESC: Luego, para los registros que tienen el mismo valor en el campo nombre,
+-- los ordena por el campo id_persona en orden descendente (del valor más alto al más bajo).
+SELECT * FROM personas ORDER BY nombre ASC, id_persona DESC;
+
+-- SELECIONAR TODOS
+SELECT * 
+-- DESDE la tabla personas
+FROM personas
+-- DONDE nombre TENGA una a y en su izquierda y derecha pueda tener más texto o no, tiene en cuenta las a A á Á à À
+WHERE nombre LIKE '%a%'; -- texto? a texto? 
+
+SELECT * 
+FROM personas
+WHERE nombre LIKE 'S%'; -- S texto? , Sam Stexto?
+
+SELECT * 
+FROM personas
+WHERE nombre LIKE '%m'; -- texto? m, 
+
+SELECT * 
+FROM personas
+WHERE apellido LIKE '%n_'; -- texto? n 1caracter
+
+SELECT * 
+FROM personas
+WHERE apellido LIKE '%__n_'; -- texto? 1caracter 1caracter n 1caracter
+
+-- % = puede tener todo el texto atras o delante (caracteres del tipo que sea)
+-- _ = tiene que tener 1 caracter, simbolo, numero... obligatorio en esa posición
+
+SELECT * 
+FROM personas
+WHERE apellidos LIKE '%__n_%io';
+
+SELECT * 
+FROM tabla
+-- que se cumplan las dos
+WHERE descripcion LIKE '%manzana%' 
+  AND descripcion LIKE '%rojo%';
+
+-- ILIKE (insensible a mayúsculas y minúsculas)
+SELECT * 
+FROM tabla 
+WHERE columna ILIKE '%texto%';
+
+-- SIMILAR TO (Patrones con expresiones regulares simples)
+SELECT * 
+FROM tabla 
+WHERE columna SIMILAR TO 'a[0-9]+b';
+
+-- POSIX Expresiones Regulares (Usando ~, ~*, !~, !~*)
+SELECT * 
+FROM tabla 
+-- ~: Coincidencia de expresión regular que distingue entre mayúsculas y minúsculas.
+-- WHERE columna ~ 'patron';
+-- ~*: Coincidencia de expresión regular que no distingue entre mayúsculas y minúsculas.
+-- WHERE columna ~* 'patron';
+-- !~: Verifica que no coincida la expresión regular (distingue mayúsculas/minúsculas).
+-- WHERE columna !~ 'patron';
+-- !~*: Verifica que no coincida la expresión regular (no distingue entre mayúsculas/minúsculas).
+WHERE columna !~* 'patron';
+
+-- Contar el numero de filas o registros de una tabla
+SELECT COUNT(*) FROM personas;
+
+SELECT COUNT(nombre) FROM personas;
+
+-- SELECIONAR nombre para CONTAR
+SELECT COUNT(nombre) -- Contar el número de registros en la tabla personas
+-- DESDE personas
+FROM personas
+-- DONDE nombre TENGA en algun lugar la a
+WHERE nombre LIKE '%a%';
