@@ -405,3 +405,129 @@ SELECT COUNT(nombre) -- Contar el número de registros en la tabla personas
 FROM personas
 -- DONDE nombre TENGA en algun lugar la a
 WHERE nombre LIKE '%a%';
+
+-- SUMAR toda la columna de salarios DE LA tabla empleados
+SELECT SUM(salario) FROM empleados;
+
+SELECT SUM(salario) 
+FROM empleados
+WHERE nombre LIKE '%a%';
+
+-- muestra el salario mas bajo de todos
+SELECT MIN(salario) FROM empleados;
+
+-- muestra el salario mas alto de todos
+SELECT MAX(salario) FROM empleados;
+
+-- SELECIONAR nombre, MAXIMO(salario)
+SELECT nombre, MAX(salario)
+-- DESDE empleados
+FROM empleados
+-- AGRUPAR POR nombre (ej Sam 3000, Sam 1500 de todos los Sam 
+-- coje el que tenga mayor salario los demas no aparecen si el nombre es igual)
+GROUP BY nombre;
+
+-- AVG es promedio de todos los salarios
+SELECT AVG(salario)
+FROM empleados;
+
+SELECT nombre, AVG(salario)
+FROM empleados
+GROUP BY nombre;
+
+-- ROUND(AVG(salario), 2): Esta función redondea el promedio del salario a 2 decimales.
+SELECT nombre, ROUND(AVG(salario), 2) AS promedio_salario
+FROM empleados
+GROUP BY nombre;
+
+-- TO_CHAR(AVG(salario), 'FM999999999.00'): Esto convierte el valor numérico a un formato de cadena con exactamente 2 decimales, eliminando ceros innecesarios.
+-- FM evita que se muestre espacio en blanco si el número es menor de lo esperado.
+-- .00 asegura que siempre se muestren dos decimales, incluso si son ceros.
+SELECT nombre, TO_CHAR(AVG(salario), 'FM999999999.00') AS promedio_salario
+FROM empleados
+GROUP BY nombre;
+
+SELECT nombre, salario
+FROM empleados
+WHERE nombre = 'Luis'
+-- si nombre y salario es igual solo muestra 1
+GROUP BY nombre, salario;
+
+SELECT nombre, salario
+FROM empleados
+WHERE nombre = 'Luis'
+GROUP BY nombre, salario
+-- muestra los que cumplan la condición ~ WHERE pero de GROUP BY
+HAVING salario > 2599;
+
+-- Mostrar todos los salarios mayor a 3000
+SELECT nombre, salario
+FROM empleados
+GROUP BY nombre, salario
+HAVING salario > 1500;
+
+SELECT nombre, salario
+FROM empleados
+GROUP BY nombre, salario
+HAVING salario > 1500
+-- ORDENAR POR salario ASCENDENTE digamos 1, 2, 3, 4,
+-- ORDER BY salario ASC; -- no hace falta poner ASC porque es por defecto
+-- 4, 3, 2, 1
+-- ORDER BY salario DESC;
+-- ORDENAR por nombre
+ORDER BY nombre;
+
+-- SELECIONAR los nombres que sean DISTINTOS (que no se repitan)
+SELECT DISTINCT nombre
+FROM empleados;
+
+-- para contar los nombres diferentes que hay sin que se repitan
+SELECT COUNT(DISTINCT nombre)
+FROM empleados;
+
+SELECT *
+FROM empleados
+-- DONDE salario este ENTRE 1800 Y 2200 (ambos numeros incluidos)
+-- WHERE salario BETWEEN 1800 AND 2200;
+-- DONDE salario NO este ENTRE 1800 Y 2200 (ambos numeros incluidos)
+WHERE salario NOT BETWEEN 1800 AND 2200;
+
+-- ALTERAR TABLA
+ALTER TABLE empleados
+-- AÑADIR RESTRICCIÓN
+ADD CONSTRAINT uq_salario
+-- UNICA
+UNIQUE(salario)
+
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    salario NUMERIC(10, 2),
+    -- Definir restricción UNIQUE en la columna salario
+    CONSTRAINT uq_salario UNIQUE (salario)
+);
+
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    salario NUMERIC(10, 2),
+    -- Definir restricción UNIQUE en la combinación de columnas nombre y salario
+    CONSTRAINT uq_nombre_salario UNIQUE (nombre, salario)
+);
+
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    salario NUMERIC(10, 2) UNIQUE -- simple y automatico
+);
+
+-- UNIQUE el valor en esa columna no se puede repetir en ninguna otra (usalo en otro lugar mas recomendado como email, id...)
+
+-- ALTERAR TABLA
+ALTER TABLE empleados
+-- ELIMINAR RESTRICCIÓN
+DROP CONSTRAINT uq_salario;
+-- uq_salario si no sabes donde esta puedes ir a
+-- pgAdmin 4 o a otro DBeaver... y ir a la base de datos
+-- Schemas>public(por defecto)>Tables>nombre_de_la_tabla>Constraints
+-- Y ahí estaria el nombre (podrian haber muchos)
