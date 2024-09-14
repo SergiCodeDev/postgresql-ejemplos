@@ -531,3 +531,81 @@ DROP CONSTRAINT uq_salario;
 -- pgAdmin 4 o a otro DBeaver... y ir a la base de datos
 -- Schemas>public(por defecto)>Tables>nombre_de_la_tabla>Constraints
 -- Y ahí estaria el nombre (podrian haber muchos)
+
+CREATE TABLE empresas (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    direccion VARCHAR(255),
+    ciudad VARCHAR(100),
+    pais VARCHAR(100),
+    telefono VARCHAR(20)
+);
+
+INSERT INTO empresas2 (nombre, direccion, ciudad, pais, telefono)
+VALUES
+    ('Tech Solutions', '1234 Calle Falsa', 'Madrid', 'España', '+34 912 345 678'),
+    ('Innovative Systems', 'Av. Reforma 123', 'Ciudad de México', 'México', '+52 55 1234 5678'),
+    ('Global Enterprises', '100 Main St', 'New York', 'USA', '+1 212 555 1234'),
+    ('Soluciones Empresariales', 'Calle 50 No 123', 'Bogotá', 'Colombia', '+57 1 234 5678'),
+    ('Future Technologies', '4567 Elm St', 'Toronto', 'Canadá', '+1 416 555 9876');
+
+
+ALTER TABLE empleados
+ADD codigo_empresa INTEGER
+
+ALTER TABLE empleados
+ADD CONSTRAINT k_codigo_empresa
+FOREIGN KEY (codigo_empresa) -- clave foranea
+REFERENCES empresas (id) -- que hace referencia a la tabla empresas a su id
+
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    salario NUMERIC(10,2),
+    codigo_empresa INTEGER,
+    CONSTRAINT k_codigo_empresa FOREIGN KEY (codigo_empresa) REFERENCES empresas(id)
+);
+
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    salario NUMERIC(10,2),
+    codigo_empresa INTEGER REFERENCES empresas(id)
+);
+
+UPDATE empleados2 SET codigo_empresa = 1
+
+INSERT INTO empleados(nombre , salario, codigo_empresa) 
+VALUES ('sam', '656456', 9) -- si la empresa 9 no existe dara un error
+
+-- CREAR UNA FUNCIÓN
+
+CREATE OR REPLACE FUNCTION Suma(num1 INTEGER, num2 INTEGER)
+RETURNS INTEGER AS 
+$$
+BEGIN
+    RETURN num1 + num2;
+END;
+$$
+LANGUAGE plpgsql;
+
+-- crear fn
+CREATE OR REPLACE FUNCTION Suma( num1 int, num2 integer)
+RETURNS INTEGER AS 
+$$
+    SELECT num1 + num2; -- lo que hace
+$$
+LANGUAGE SQL;
+
+-- como usarla
+SELECT suma (98 , 2)
+
+CREATE FUNCTION buscar_salario(VARCHAR) -- $1
+RETURNS INTEGER AS
+$$
+	SELECT salario FROM empleados
+	WHERE nombre = $1; -- $2 , $3 segun los campos que reciba
+$$
+LANGUAGE SQL;
+
+SELECT buscar_salario('Juan')
