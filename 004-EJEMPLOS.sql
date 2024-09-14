@@ -608,4 +608,318 @@ $$
 $$
 LANGUAGE SQL;
 
-SELECT buscar_salario('Juan')
+SELECT buscar_salario('Juan');
+
+-- funcion que retorna nada
+CREATE FUNCTION insertar_personas ()
+RETURNS VOID AS -- void = no retornar nada
+$$
+INSERT INTO empleados(nombre, salario, codigo_empresa) 
+VALUES('David', 1800, 2);
+INSERT INTO empleados (nombre, salario, codigo_empresa)
+VALUES
+('David2', 1800, 2),
+('David3', 1800, 3),
+('David4', 1800, 2),
+('David5', 1800, 2);
+$$
+LANGUAGE SQL;
+
+SELECT insertar_personas()
+
+CREATE FUNCTION buscar_info (int)
+RETURNS empleados AS
+$$
+SELECT * FROM empleados
+WHERE id = $1;
+$$
+LANGUAGE SQL;
+
+SELECT buscar_info(1)
+
+SELECT Top(5) * FROM empleados; -- SQL
+
+-- SELECIONAR TODOS DESDE empleados con un LIMITE de 5(maximo, muestra los 5 primeros)
+SELECT * FROM empleados LIMIT 5;
+
+-- Seleccionar los siguientes 5 registros (del 6 al 10)
+SELECT * FROM empleados
+LIMIT 5 OFFSET 5;
+
+-- Seleccionar los siguientes 5 registros (del 11 al 15)
+SELECT * FROM empleados
+LIMIT 5 OFFSET 10;
+
+-- TRIGGER
+CREATE FUNCTION fn_test() 
+RETURNS TRIGGER AS
+$$
+BEGIN
+	INSERT INTO "log_triggers_empleados"
+	-- VALUES (NEW) -- NUEVA 
+	VALUES (OLD.nombre, OLD.salario, OLD.codigo_empresa) -- lo que tiene la tabla en ese momento, antes del update
+	RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_update 
+BEFORE UPDATE ON empleados
+FOR EACH ROW
+EXECUTE PROCEDURE fn_test();
+
+-- Paso 1: Crear la Tabla empleados
+-- Primero, vamos a definir la tabla empleados con algunos campos de ejemplo:
+CREATE TABLE empleados (
+    id serial PRIMARY KEY,
+    nombre varchar(50),
+    salario numeric(10,2),
+    codigo_empresa integer
+);
+
+-- Paso 2: Crear la Tabla de Auditoría log_triggers_empleados
+-- Luego, creamos la tabla de auditoría log_triggers_empleados para registrar cualquier cambio en los campos de empleados. 
+-- Esta tabla tendrá los mismos campos que la tabla empleados, más algunos adicionales para registrar la acción realizada y la fecha del cambio.
+CREATE TABLE log_triggers_empleados (
+    id serial PRIMARY KEY,
+    empleado_id integer,
+    nombre varchar(50),
+    salario numeric(10,2),
+    codigo_empresa integer,
+    action_type varchar(10), -- INSERT, UPDATE, DELETE
+    action_timestamp timestamp DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Paso 3: Crear la Función de Trigger
+-- La función de trigger que se encargará de insertar registros en log_triggers_empleados cada vez que se realice una operación en empleados.
+CREATE OR REPLACE FUNCTION fn_test()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    INSERT INTO log_triggers_empleados (
+        empleado_id, 
+        nombre, 
+        salario, 
+        codigo_empresa, 
+        action_type
+    )
+    VALUES (
+        COALESCE(NEW.id, OLD.id), -- Usa el nuevo ID para INSERT y el viejo para UPDATE/DELETE
+        COALESCE(NEW.nombre, OLD.nombre), 
+        COALESCE(NEW.salario, OLD.salario),
+        COALESCE(NEW.codigo_empresa, OLD.codigo_empresa),
+        TG_OP -- Indica la operación: INSERT, UPDATE o DELETE
+    );
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+-- Paso 4: Crear el Trigger
+-- Finalmente, creamos el trigger para que llame a la función de auditoría en las operaciones de INSERT, UPDATE o DELETE.
+CREATE TRIGGER trg_test_empleados
+AFTER INSERT OR UPDATE OR DELETE ON empleados
+FOR EACH ROW
+EXECUTE FUNCTION fn_test();
+
+-- Paso 1: Crear la tabla de logs
+CREATE TABLE log_empleados (
+    id SERIAL PRIMARY KEY,
+    empleado_id INTEGER,
+    nombre VARCHAR(50),
+    salario NUMERIC(10, 2),
+    codigo_empresa INTEGER,
+    usuario VARCHAR(250),
+    fecha DATE,
+    tiempo TIME
+);
+
+-- Paso 2: Crear la función
+
+-- Crear o reemplazar una función llamada fn_tr_insert_log que será usada por un trigger
+CREATE OR REPLACE FUNCTION fn_tr_insert_log() 
+-- La función retornará un tipo TRIGGER
+RETURNS TRIGGER AS
+$$
+DECLARE
+    -- Declarar la variable usuario que contendrá el nombre del usuario actual
+    usuario VARCHAR(250) := USER;
+    -- Declarar la variable fecha para guardar la fecha actual
+    fecha DATE := CURRENT_DATE;
+    -- Declarar la variable tiempo para guardar la hora actual
+    tiempo TIME := CURRENT_TIME;
+BEGIN
+    -- Insertar los valores en la tabla log_empleados
+    INSERT INTO log_empleados (empleado_id, nombre, salario, codigo_empresa, usuario, fecha, tiempo)
+    -- Los valores a insertar son: el id, nombre, salario y código de empresa del nuevo registro,
+    -- además de las variables usuario, fecha y tiempo capturadas en la función
+    VALUES (NEW.id, NEW.nombre, NEW.salario, NEW.codigo_empresa, usuario, fecha, tiempo);
+
+    -- Devolver la nueva fila insertada (esto es necesario para completar el trigger)
+    RETURN NEW;
+END;
+$$
+-- El lenguaje usado es PL/pgSQL
+LANGUAGE plpgsql;
+
+--Paso 3: Crear el trigger
+
+-- Crear un trigger llamado trg_insert_empleados
+CREATE TRIGGER trg_insert_empleados
+-- El trigger se activa después de un INSERT en la tabla empleados
+AFTER INSERT ON empleados
+-- El trigger se ejecutará para cada fila insertada
+FOR EACH ROW
+-- El trigger usará la función fn_tr_insert_log para insertar en el log
+EXECUTE FUNCTION fn_tr_insert_log();
+
+-- Probar trigger:
+INSERT INTO empleados (nombre, salario, codigo_empresa) 
+VALUES ('María García', 3200.75, 2);
+
+-- SELECIONAR TODOS DESDE empleados
+SELECT * FROM empleados
+-- DONDE el id sea igual a 1 o 11 o 3 (devuelve todos los que coincidan)
+WHERE id = 1 OR id = 11 OR id = 3;
+
+SELECT * FROM empleados
+WHERE id = 1 OR id = 11 OR nombre = 'Luis';
+
+SELECT * FROM empleados
+-- DONDE id TENGA un 1 , 11 , 3
+WHERE id IN (1, 11, 3);
+
+SELECT * FROM empleados
+-- DONDE id TENGA un 1 , 11 , 3 O nombre tenga Luis
+WHERE id IN (1, 11, 3) OR nombre = 'Luis';
+
+-- CREAR una VISTA
+CREATE VIEW view_empleados_id_nombre
+AS SELECT id, nombre FROM empleados;
+
+-- USAR VISTA
+SELECT * FROM view_empleados_id_nombre;
+
+SELECT empleados.id, empleados.nombre
+FROM empleados
+UNION -- une las dos tablas
+-- UNION ALL -- combinar los resultados y permitir duplicados
+SELECT empresas.id, empresas.nombre, 
+FROM empresas;
+
+-- en esta hay otra columna donde dice de que tabla proceden
+SELECT id, nombre, 'empleados' AS Origen
+FROM empleados
+UNION
+SELECT id, nombre, 'empresas'
+FROM empresas;
+
+SELECT id, nombre, 'empleados' AS origen
+FROM empleados
+UNION
+SELECT id, nombre, 'empresas'
+FROM empresas
+ORDER BY origen; -- ordenar por origen
+
+-- SELECIONAR TODO
+SELECT *
+-- DESDE empleados
+FROM empleados
+-- REALIZAR UNA UNIÓN INTERNA
+INNER JOIN empresas
+-- CONDICIÓN DE UNIÓN
+ON empleados.id = empresas.id;
+
+-- SELECIONAR id empleado, nombre empleado, nombre empresa, pais empresa
+SELECT p.id, p.nombre, e.nombre , e.pais
+-- DESDE empleados RENOMBRAR a p
+FROM empleados AS p
+-- REALIZAR UNA UNIÓN INTERNA RENOMBRAR empresas a e
+INNER JOIN empresas AS e
+-- DONDE los id sean iguales
+ON p.id = e.id;
+
+-- 1. Unión Interna (INNER JOIN)
+-- Descripción: La unión interna devuelve solo las filas que tienen coincidencias en ambas tablas basadas en la condición de unión.
+
+-- Resultado: Solo las filas que cumplen con la condición de unión en ambas tablas se incluyen en el resultado final.
+
+-- Sintaxis:
+SELECT columnas
+FROM tabla1
+INNER JOIN tabla2
+ON tabla1.columna = tabla2.columna;
+
+SELECT empleados.id, empleados.nombre, empresas.nombre_empresa
+FROM empleados
+INNER JOIN empresas
+ON empleados.id = empresas.id;
+-- Resultado: Solo se mostrarán los empleados que tienen una empresa asociada y viceversa.
+
+-- 2. Unión Externa (OUTER JOIN)
+-- La unión externa se divide en tres tipos principales: LEFT OUTER JOIN, RIGHT OUTER JOIN, y FULL OUTER JOIN.
+
+-- LEFT OUTER JOIN (o simplemente LEFT JOIN):
+
+-- Descripción: Devuelve todas las filas de la tabla de la izquierda (tabla1) y las filas coincidentes de la tabla de la derecha (tabla2).
+-- Si no hay coincidencias en la tabla de la derecha, se devuelven NULL en las columnas de la tabla de la derecha.
+
+-- Sintaxis:
+SELECT columnas
+FROM tabla1
+LEFT OUTER JOIN tabla2
+ON tabla1.columna = tabla2.columna;
+
+SELECT empleados.id, empleados.nombre, empresas.nombre_empresa
+FROM empleados
+LEFT OUTER JOIN empresas
+ON empleados.id = empresas.id;
+-- Resultado: Mostraría todos los empleados, incluyendo aquellos que no tienen una empresa asociada (esos empleados tendrán NULL en las columnas de la empresa).
+
+-- RIGHT OUTER JOIN (o simplemente RIGHT JOIN):
+
+-- Descripción: Devuelve todas las filas de la tabla de la derecha (tabla2) y las filas coincidentes de la tabla de la izquierda (tabla1).
+-- Si no hay coincidencias en la tabla de la izquierda, se devuelven NULL en las columnas de la tabla de la izquierda.
+
+-- Sintaxis:
+SELECT columnas
+FROM tabla1
+RIGHT OUTER JOIN tabla2
+ON tabla1.columna = tabla2.columna;
+
+SELECT empleados.id, empleados.nombre, empresas.nombre_empresa
+FROM empleados
+RIGHT OUTER JOIN empresas
+ON empleados.id = empresas.id;
+-- Resultado: Mostraría todas las empresas, incluyendo aquellas que no tienen empleados asociados (esos registros tendrán NULL en las columnas del empleado).
+
+-- FULL OUTER JOIN:
+
+-- Descripción: Devuelve todas las filas cuando hay una coincidencia en una de las tablas. Las filas de la tabla de la izquierda que no tienen
+-- coincidencia en la tabla de la derecha y las filas de la tabla de la derecha que no tienen coincidencia en la tabla de la izquierda
+-- se muestran con NULL en las columnas de la tabla que no tiene coincidencia.
+
+-- Sintaxis:
+SELECT columnas
+FROM tabla1
+FULL OUTER JOIN tabla2
+ON tabla1.columna = tabla2.columna;
+
+SELECT empleados.id, empleados.nombre, empresas.nombre_empresa
+FROM empleados
+FULL OUTER JOIN empresas
+ON empleados.id = empresas.id;
+-- Resultado: Mostraría todos los empleados y todas las empresas, independientemente de si hay coincidencias entre ellas. 
+-- Las filas sin coincidencias tendrán NULL en las columnas de la tabla que no tiene coincidencias.
+
+-- Resumen
+
+-- INNER JOIN: Devuelve solo las filas con coincidencias en ambas tablas.
+
+-- LEFT OUTER JOIN: Devuelve todas las filas de la tabla de la izquierda y las coincidencias de la tabla de la derecha 
+-- (si no hay coincidencias, se devuelven NULL para las columnas de la tabla de la derecha).
+
+-- RIGHT OUTER JOIN: Devuelve todas las filas de la tabla de la derecha y las coincidencias de la tabla de la izquierda 
+-- (si no hay coincidencias, se devuelven NULL para las columnas de la tabla de la izquierda).
+
+-- FULL OUTER JOIN: Devuelve todas las filas cuando hay una coincidencia en cualquiera de las tablas, mostrando NULL donde no hay coincidencias.
