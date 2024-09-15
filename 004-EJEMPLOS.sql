@@ -923,3 +923,47 @@ ON empleados.id = empresas.id;
 -- (si no hay coincidencias, se devuelven NULL para las columnas de la tabla de la izquierda).
 
 -- FULL OUTER JOIN: Devuelve todas las filas cuando hay una coincidencia en cualquiera de las tablas, mostrando NULL donde no hay coincidencias.
+
+
+
+-- Muestra si se cumple la condición
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+INNER JOIN empresas AS e -- derecha
+-- ON p.codigo_empresa = e.id;
+ON p.id = e.id;
+
+
+-- Muestra la tabla de la izquierda sin importar si los datos de la tabla derecha existen
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+LEFT JOIN empresas AS e -- derecha
+--ON p.codigo_empresa = e.id;
+ON p.id = e.id;
+
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+LEFT OUTER JOIN empresas AS e -- derecha OUTER cominación externa (opcional)
+ON p.id = e.id;
+
+
+-- Muestra la tabla de la derecha siempre sin importar si los datos de la tabla izquierda existen
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+RIGHT JOIN empresas AS e -- derecha
+ON p.codigo_empresa = e.id;
+-- ON p.id = e.id;
+
+-- Muestra las 2 tablas aunque no coincidan
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+FULL JOIN empresas AS e -- derecha
+ON p.codigo_empresa = e.id;
+-- ON p.id = e.id;
+
+
+-- Muestra todas las combinaciones posibles
+-- Ej: si hay 5 empresas el nombre aparecera 5 veces con cada una de las empresas en 5 filas 
+SELECT p.id, p.nombre, e.nombre , e.pais
+FROM empleados AS p -- izquierda 
+CROSS JOIN empresas AS e; -- derecha
