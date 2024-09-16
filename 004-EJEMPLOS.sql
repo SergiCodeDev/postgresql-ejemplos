@@ -967,3 +967,190 @@ ON p.codigo_empresa = e.id;
 SELECT p.id, p.nombre, e.nombre , e.pais
 FROM empleados AS p -- izquierda 
 CROSS JOIN empresas AS e; -- derecha
+
+
+-- INNER JOIN une las dos tablas donde coiciden las dos
+-- LEFT JOIN une la tabla de la izquierda(toda) + la parte donde coincide con la de la derecha
+-- RIGHT JOIN une la tabla de la derecha(toda) + la parte donde coincide con la de la izquierda
+-- FULL JOIN une la tabla de la izquierda con la de la derecha mostrando todos los datos, si no estan relacionados pondra null en esas partes
+-- CROSS JOIN muestra todas las combinaciones posibles entre una y otra
+
+-- CREAR VISTA
+CREATE VIEW view_personas AS
+SELECT * 
+FROM personas
+WHERE test = 'JS';
+
+SELECT * FROM view_personas;
+
+-- te deja añadir a la vista C#
+INSERT INTO view_personas VALUES (12, 'Carlos', 'Oliver', 'C#');
+
+DROP VIEW view_personas;
+
+-- Para asegurarse de que no genere un error en caso de que la vista no exista
+DROP VIEW IF EXISTS view_personas;
+
+CREATE VIEW view_personas AS
+SELECT * 
+FROM personas
+WHERE test = 'JS'
+-- garantiza que al añadir se cumpla con la condición JS
+WITH CHECK OPTION;
+
+-- aqui ahora dara un error por el campo C# porque la vista tiene WITH CHECK OPTION
+INSERT INTO view_personas VALUES (13, 'Carlos', 'Oliver', 'C#');
+-- aqui si que deja porque tiene test = JS
+INSERT INTO view_personas VALUES (14, 'Carlos', 'Oliver', 'JS');
+
+
+-- Valor absoluto 30 (devuelve un valor positivo)
+SELECT ABS(-30);
+
+--Calcula la raíz cúbica 2.924017738212866
+SELECT CBRT(25);
+
+-- REDONDEAR hacia arriba 16
+SELECT CEILING(15.33);
+
+-- REDONDEAR hacia ABAJO 15
+SELECT FLOOR(15.99);
+
+-- AL CUADRADO 5 * 5 * 5 = 125
+SELECT POWER(5,3);
+
+-- 25
+SELECT ROUND(24.82);
+-- 24.83
+SELECT ROUND(24.825, 2);
+
+-- 0
+SELECT SIGN(0);
+-- 1
+SELECT SIGN(244.21);
+-- -1
+SELECT SIGN(-32123);
+
+-- Raíz cuadrada 5
+SELECT SQRT(25);
+
+-- devuelve el resto de una division
+SELECT MOD(33, 2);
+
+-- 3.141592653589793
+SELECT PI();
+
+-- NUMERO RANDOM entre 0 y 1 ej resultado = 0.6219692815560511
+SELECT RANDOM();
+
+-- 57 NO redondea
+SELECT TRUNC(57.86);
+-- -57
+SELECT TRUNC(-57.36);
+-- 57.36
+SELECT TRUNC(57.36653, 2);
+-- -57.36
+SELECT TRUNC(-57.36973, 2);
+
+-- 10 CARACTERES
+SELECT CHAR_LENGTH('Hola mundo');
+
+-- HOLA MUNDO
+SELECT UPPER('Hola mundo');
+
+-- hola mundo
+SELECT LOWER('Hola mundo');
+
+-- empieza en la posicion 6
+SELECT POSITION('mundo' IN 'Hola mundo');
+-- empieza en la posicion 1
+SELECT POSITION('Hola' IN 'Hola mundo');
+-- 0 es igual a que no se encontro Mundo != mundo
+SELECT POSITION('Mundo' IN 'Hola mundo');
+
+-- ola mu
+SELECT SUBSTRING('Hola mundo' FROM 2 FOR 6);
+
+-- Hola mundo QUITA LOS ESPACIOS DEL PRINCIPIO Y FINAL
+SELECT TRIM(' Hola mundo ');
+
+--  Hola -mundo -- QUITA LOS -- PERO DEJO EL ESPACIO AL PRINCIPIO
+SELECT TRIM(LEADING '-' FROM '-- Hola -mundo --');
+-- -- Hola -mundo  QUITA LOS -- PERO DEJO EL ESPACIO AL FINAL
+SELECT TRIM(TRAILING '-' FROM '-- Hola -mundo --');
+--  Hola -mundo  QUITA LOS -- PERO DEJO EL ESPACIOS
+SELECT TRIM(BOTH '-' FROM '-- Hola -mundo --');
+
+-- -- Hola -mundo --
+SELECT LTRIM('   -- Hola -mundo --');
+--  Hola -mundo -- DEJA EL ESPACIO AL PRINCIPIO
+SELECT LTRIM('-- Hola -mundo --', '-');
+-- -- Hola -mundo  DEJA EL ESPACIO AL FINAL
+SELECT RTRIM('-- Hola -mundo --', '-');
+-- ola -mundo --
+SELECT SUBSTR('-- Hola -mundo --', 5);
+-- ola -mun
+SELECT SUBSTR('-- Hola -mundo --', 5,8);
+-- ________-- Hola -mundo -- 25 es lo que debe ocupar el string
+-- si no llega le añade los _, si fuera 5 daria -- Ho
+SELECT LPAD('-- Hola -mundo --', 25,'_');
+-- -- Hola -mundo --________
+SELECT RPAD('-- Hola -mundo --', 25,'_');
+
+-- 2024-09-16 = FECHA ACTUAL
+SELECT CURRENT_DATE;
+
+-- 17:37:03.413209+02:00 = TIEMPO ACTUAL horas:minutos:segundos:fracciones_de_segundo y zona horaria
+SELECT CURRENT_TIME;
+-- 17:41:11.875000+02:00
+SELECT CURRENT_TIME(3);  -- Limita la precisión a milisegundos
+-- 17:41:19+02:00
+SELECT CURRENT_TIME(0);  -- Sin fracciones de segundo
+
+-- 2024-09-16 17:43:46.960746+02 FECHA + HORA ACRUAL
+SELECT CURRENT_TIMESTAMP;
+
+-- 2024
+SELECT EXTRACT(YEAR FROM CURRENT_TIMESTAMP);
+-- 9
+SELECT EXTRACT(MONTH FROM CURRENT_TIMESTAMP);
+-- 16
+SELECT EXTRACT(DAY FROM CURRENT_TIMESTAMP);
+-- 17
+SELECT EXTRACT(HOUR FROM CURRENT_TIMESTAMP);
+-- 21 (SIGLO)
+SELECT EXTRACT(CENTURY FROM CURRENT_TIMESTAMP);
+-- 3 (cuarto del año)
+SELECT EXTRACT(QUARTER FROM CURRENT_TIMESTAMP);
+-- 50
+SELECT EXTRACT(MINUTE FROM CURRENT_TIMESTAMP);
+-- 37.933121
+SELECT EXTRACT(SECOND FROM CURRENT_TIMESTAMP);
+-- 38 (semana del año)
+SELECT EXTRACT(WEEK FROM CURRENT_TIMESTAMP);
+
+-- 1 (Día de la semana)
+-- Resultados:
+-- 0: Domingo
+-- 1: Lunes
+-- 2: Martes
+-- 3: Miércoles
+-- 4: Jueves
+-- 5: Viernes
+-- 6: Sábado
+SELECT EXTRACT(DOW FROM CURRENT_TIMESTAMP);
+
+-- Monday
+SELECT TO_CHAR(CURRENT_TIMESTAMP, 'Day');
+
+-- 260 (Día del año)
+SELECT EXTRACT(DOY FROM CURRENT_TIMESTAMP);
+
+-- Seleccionar múltiples partes a la vez
+SELECT 
+    EXTRACT(YEAR FROM CURRENT_TIMESTAMP) AS year,
+    EXTRACT(MONTH FROM CURRENT_TIMESTAMP) AS month,
+    EXTRACT(DAY FROM CURRENT_TIMESTAMP) AS day,
+    EXTRACT(HOUR FROM CURRENT_TIMESTAMP) AS hour,
+    EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) AS minute,
+    EXTRACT(SECOND FROM CURRENT_TIMESTAMP) AS second;
