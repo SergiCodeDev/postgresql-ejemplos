@@ -1154,3 +1154,227 @@ SELECT
     EXTRACT(HOUR FROM CURRENT_TIMESTAMP) AS hour,
     EXTRACT(MINUTE FROM CURRENT_TIMESTAMP) AS minute,
     EXTRACT(SECOND FROM CURRENT_TIMESTAMP) AS second;
+
+-- SELECIONAR TODO DESDE personas
+SELECT * FROM personas
+-- DONDE test SEA NULO
+WHERE test IS NULL;
+
+SELECT * FROM personas
+-- DONDE test NO SEA NULO
+WHERE test IS NOT NULL;
+
+CREATE SEQUENCE sec_indice -- nombre secuencia
+START WITH 1 -- empieza en 1
+INCREMENT BY 20 -- va sumando 20 cada vez
+-- SI NO SE PONEN LOS VALORES min y max tendran unos por defecto
+MINVALUE 1 -- valor minimo
+MAXVALUE 100 -- valor maximo
+CYCLE; -- evita error y hace que se repita
+-- NO CYCLE; -- SI lo quitas o pones NO CYCLE dara un error si se repite (usar para indices)
+
+SELECT * FROM sec_indice;
+
+SELECT NEXTVAL('sec_indice');
+
+-- alterar  sec_indice
+ALTER SEQUENCE sec_indice
+START WITH 1 -- empieza en 1
+INCREMENT BY 1
+MINVALUE 1 -- valor minimo
+MAXVALUE 100 -- valor maximo
+NO CYCLE;
+
+-- ELIMINAR
+DROP SEQUENCE sec_indice;
+
+-- SELECIONAR nombre, apellido,
+SELECT nombre, apellido,(
+    -- SUBCONSULTA: SELECIONAR MAXIMO(salario) RENOMBRAR columna a Salario maximo
+	SELECT MAX(salario) AS "Salario maximo"
+    -- DESDE empleados renombrar tabla a e
+	FROM empleados AS e
+    -- DONDE empleados.nombre sea igual a personas.nombre
+	WHERE e.nombre = p.nombre
+)
+-- DESDE personas renombrar tabla a p
+FROM personas AS p;
+
+SELECT p.nombre, p.apellido, (
+    SELECT MAX(e.salario)
+    FROM empleados AS e
+    WHERE e.nombre = p.nombre
+) AS "Salario maximo"
+FROM personas AS p
+WHERE (
+    SELECT MAX(e.salario)
+    FROM empleados AS e
+    WHERE e.nombre = p.nombre
+) IS NOT NULL;
+
+-- SELECCIONAR las columnas nombre, apellido y pais de la tabla personas
+SELECT nombre, apellido, pais
+-- DESDE la tabla personas
+FROM personas
+-- FILTRAR solo las filas donde el pais coincida con el valor devuelto por la subconsulta
+WHERE pais = (
+    -- SUBCONSULTA: SELECCIONAR la columna pais desde la tabla precios
+    SELECT pais
+    -- DESDE la tabla precios, ordenando los resultados por la columna precio en orden ascendente
+    FROM precios 
+    -- LIMITAR los resultados a 1 fila, saltando las primeras 14 filas
+    LIMIT 1
+    OFFSET 14
+);
+
+CREATE TABLE personas2 (
+	id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50),
+    apellido VARCHAR(50),
+    pais VARCHAR(50)
+);
+
+INSERT INTO personas2 (nombre, apellido, pais) VALUES
+('Juan', 'Pérez', 'Argentina'),
+('Ana', 'García', 'España'),
+('Luis', 'Martínez', 'México'),
+('Marta', 'Gómez', 'Colombia'),
+('Carlos', 'López', 'Chile'),
+('Sofía', 'González', 'Perú'),
+('Diego', 'Rodríguez', 'Uruguay'),
+('Lucía', 'Fernández', 'Brasil'),
+('Pedro', 'Ramírez', 'Paraguay'),
+('Valeria', 'Silva', 'Bolivia'),
+('Javier', 'Ortiz', 'Ecuador'),
+('Camila', 'Morales', 'Venezuela'),
+('Tomás', 'Núñez', 'Cuba'),
+('Pablo', 'Díaz', 'Panamá'),
+('Ricardo', 'Herrera', 'Costa Rica');
+
+CREATE TABLE precios2 (
+    pais VARCHAR(50),
+    precio DECIMAL(10, 2)
+);
+
+INSERT INTO precios2 (pais, precio) VALUES
+('Argentina', 500.00),
+('España', 700.00),
+('México', 650.00),
+('Colombia', 550.00),
+('Chile', 400.00),
+('Perú', 600.00),
+('Uruguay', 300.00),
+('Brasil', 450.00),
+('Paraguay', 350.00),
+('Bolivia', 200.00),
+('Ecuador', 720.00),
+('Venezuela', 640.00),
+('Cuba', 550.00),
+('Panamá', 500.00),
+('Costa Rica', 580.00);
+
+-- SELECCIONAR las columnas nombre, apellido y pais de la tabla personas2
+SELECT nombre, apellido, pais
+-- DESDE la tabla personas2
+FROM personas2
+-- FILTRAR solo las filas donde el pais coincida con el valor devuelto por la subconsulta
+WHERE pais = (
+    -- SUBCONSULTA: SELECCIONAR la columna pais desde la tabla precios2
+    SELECT pais
+    -- DESDE la tabla precios2, ordenando los resultados por la columna precio en orden ascendente
+    FROM precios2 
+    -- LIMITAR los resultados a 1 fila, saltando las primeras 14 filas
+    LIMIT 1
+    OFFSET 14
+);
+
+-- SELECCIONAR las columnas nombre, apellido y pais desde la tabla personas2
+SELECT nombre, apellido, pais
+FROM personas2
+-- FILTRAR los resultados donde el pais esté presente en los resultados de la subconsulta
+WHERE pais IN (
+    -- SUBCONSULTA: SELECCIONAR la columna pais desde la tabla precios2
+    SELECT pais
+    FROM precios2
+    -- FILTRAR los paises que contienen la letra 'C' en cualquier parte del nombre
+    WHERE pais LIKE '%C%'
+);
+
+ALTER TABLE personas2
+ADD COLUMN visa VARCHAR(250);
+
+UPDATE personas2
+SET pais = (
+SELECT pais 
+FROM precios2 
+ORDER BY precio 
+LIMIT 1 
+OFFSET 50
+) -- seleciona un pais de precios
+WHERE pais IS NULL;
+
+-- ACTUALIZAR la columna visa a 'si' en la tabla personas2
+UPDATE personas2
+-- ESTABLECER el valor de la columna visa a 'si'
+SET visa = 'si'
+-- FILTRAR solo las filas donde el pais esté en la lista devuelta por la subconsulta
+WHERE pais IN (
+    -- SUBCONSULTA: SELECCIONAR la columna pais desde la tabla precios2
+    SELECT pais 
+    -- DESDE la tabla precios2
+    FROM precios2 
+    -- FILTRAR los países que contienen 'Esp' en cualquier parte del nombre
+    WHERE pais LIKE '%Esp%' 
+);
+
+-- ELIMINAR de la tabla personas2
+DELETE FROM personas2
+-- FILTRAR solo las filas donde el valor de la columna pais esté en la lista devuelta por la subconsulta
+WHERE pais IN (
+    -- SUBCONSULTA: SELECCIONAR la columna pais desde la tabla precios2
+    SELECT pais
+    -- DESDE la tabla precios2
+    FROM precios2
+    -- FILTRAR los países que contienen 'Cu' en cualquier parte del nombre
+    WHERE pais LIKE '%Cu%'
+);
+
+CREATE TABLE precios_maximos2 (
+    pais VARCHAR(100) PRIMARY KEY,
+    precio DECIMAL(10, 2)
+);
+
+-- INSERTAR los datos en la tabla precios_maximos2
+INSERT INTO precios_maximos2
+-- SELECCIONAR la columna pais y el valor máximo de la columna precio
+SELECT pais, MAX(precio)
+-- DESDE la tabla precios2
+FROM precios2
+-- FILTRAR los datos sin ninguna condición adicional (la condición pais = pais es redundante)
+WHERE pais = pais
+-- AGRUPAR los datos por la columna pais
+GROUP BY pais;
+
+-- VARIABLES SQL
+DECLARE @variable int;
+SET @variable = 50;
+
+SELECT @variable;
+-- VARIABLES SQL
+
+-- INICIAR un bloque anónimo de código PL/pgSQL
+DO $$
+-- DECLARAR variables locales
+DECLARE
+    -- Declarar la variable x e inicializarla con el valor 50
+    x int := 50;
+    -- Declarar la variable y e inicializarla con el valor 500
+    y int := 500;
+    -- Declarar la variable z sin inicializar
+    z int;
+BEGIN
+    -- CALCULAR el producto de x e y y asignar el resultado a z
+    z := x * y;
+    -- MOSTRAR un mensaje con el resultado del cálculo
+    RAISE NOTICE 'El resultado es: %', z;
+END $$;
