@@ -1378,3 +1378,117 @@ BEGIN
     -- MOSTRAR un mensaje con el resultado del cálculo
     RAISE NOTICE 'El resultado es: %', z;
 END $$;
+
+
+DO $$
+BEGIN
+    -- IF codicion THEN
+    -- ELSE
+    -- END IF;
+    IF EXISTS( -- si existe
+        SELECT pais 
+        FROM precios2
+        WHERE pais = 'Paraguay'
+    ) THEN
+		DELETE FROM precios2
+		WHERE pais = 'Paraguay';
+        RAISE NOTICE 'El país fue encontrado';
+    ELSE
+         RAISE NOTICE 'El país no fue encontrado';
+    END IF;
+END $$;
+
+SELECT pais, precio, 
+	CASE -- caso
+        -- SI pais es Argentina poner Vuelo con AAA
+		WHEN pais = 'Argentina' THEN 'Vuelo con AAA'
+		WHEN pais = 'España' THEN 'Vuelo Retrasado'
+		ELSE 'Vuelo Normal' -- el resto
+	END AS "Tipo de viaje" -- el nombre de la columna
+FROM precios2;
+
+DO $$
+DECLARE
+    -- DECLARAR una variable del tipo registro (record) para almacenar cada fila obtenida del cursor
+    registro record;
+    -- DECLARAR un cursor llamado cur_precios2 que contiene la consulta SELECT de la tabla precios2
+    -- ORDENAR los resultados por la columna "pais"
+    cur_precios2 CURSOR FOR 
+        SELECT *
+        FROM precios2
+        ORDER BY pais;
+BEGIN
+    -- ABRIR el cursor cur_precios2 para comenzar a recorrer los datos de la tabla precios2
+    OPEN cur_precios2;
+    -- OBTENER la primera fila del cursor cur_precios2 e insertarla en la variable registro
+    FETCH cur_precios2 INTO registro;
+    -- MOSTRAR un mensaje con el valor de las columnas "pais" y "precio" del registro actual
+    RAISE NOTICE 'Pais: %, Precio: %', 
+    registro.pais,
+    registro.precio;
+END $$
+-- ESPECIFICAR el lenguaje utilizado en el bloque, en este caso PL/pgSQL
+LANGUAGE 'plpgsql';
+
+DO $$
+DECLARE
+    registro record;
+	cur_precios2 CURSOR FOR 
+		SELECT *
+		FROM precios2
+		ORDER BY pais;
+BEGIN
+	OPEN cur_precios2;
+	FETCH cur_precios2 INTO registro;
+	WHILE (FOUND) LOOP
+    RAISE NOTICE 'Pais: %, Precio: %', 
+	registro.pais,
+	registro.precio;
+	FETCH cur_precios2 INTO registro;
+	END LOOP;
+END $$
+LANGUAGE 'plpgsql';
+
+DO $$
+DECLARE
+    registro record;
+    -- Declarar un cursor que selecciona todos los registros de precios2 ordenados por país
+    cur_precios2 CURSOR FOR 
+        SELECT *
+        FROM precios2
+        ORDER BY pais;
+BEGIN
+    -- Abrir el cursor
+    OPEN cur_precios2;
+    -- Bucle para iterar sobre cada fila del cursor
+    LOOP
+        -- Obtener la siguiente fila del cursor
+        FETCH cur_precios2 INTO registro;
+        -- Salir del bucle si no se encontraron más filas (cuando FOUND es falso)
+        EXIT WHEN NOT FOUND;
+        -- Mostrar el país y el precio de la fila actual
+        RAISE NOTICE 'Pais: %, Precio: %', 
+        registro.pais,
+        registro.precio;
+    END LOOP;
+    -- Cerrar el cursor después de procesar todos los registros
+    CLOSE cur_precios2;
+END $$
+LANGUAGE 'plpgsql';
+
+DO $$
+DECLARE
+    registro record;
+	cur_precios2 CURSOR FOR 
+		SELECT *
+		FROM precios2
+		ORDER BY pais;
+BEGIN
+    -- RECORRER CON for in
+	FOR registro IN cur_precios2 LOOP
+    	RAISE NOTICE 'Pais: %, Precio: %', 
+		registro.pais,
+		registro.precio;
+	END LOOP;
+END $$
+LANGUAGE 'plpgsql';
